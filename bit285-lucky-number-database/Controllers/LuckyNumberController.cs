@@ -14,20 +14,38 @@ namespace bit285_lucky_number_database.Controllers
         // GET: LuckyNumber
         public ActionResult Spin()
         {
-            LuckyNumber myLuck = new LuckyNumber { Number = 7, Balance = 4 };
+            int luckID = (int)Session["currentID"];
+            LuckyNumber myLuck = dbc.LuckyNumbers.Where(m => m.LuckyNumberID == luckID).First();
+            dbc.LuckyNumbers.Add(myLuck);
+            dbc.SaveChanges();
             return View(myLuck);
         }
 
         [HttpPost]
         public ActionResult Spin(LuckyNumber lucky)
         {
-            if(lucky.Balance>0)
+            int luckID = (int)Session["currentID"];
+            LuckyNumber databaseLuck = dbc.LuckyNumbers.Where(m => m.LuckyNumberID == luckID).First();
+
+            if (databaseLuck.Balance > 0)
             {
-                lucky.Balance -= 1;
+                databaseLuck.Balance -= 1;
             }
-
-
-            return View(lucky);
+            databaseLuck.Number = lucky.Number;
+            dbc.SaveChanges();
+            return View(databaseLuck);
+        }
+        public ActionResult Index()
+        {
+            return View();
+        }
+        [HttpPost]
+        public ActionResult Index(LuckyNumber lucky)
+        {
+            dbc.LuckyNumbers.Add(lucky);
+            dbc.SaveChanges();
+            Session["currentID"] = lucky.LuckyNumberID;
+            return View("Spin",lucky);
         }
     }
 }
